@@ -1,9 +1,10 @@
 package com.id.tvstream.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -18,11 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.id.tvstream.data.SampleChannels
+import com.id.tvstream.data.ChannelRepository
 import com.id.tvstream.model.Channel
 import com.id.tvstream.player.VideoPlayer
 import com.id.tvstream.ui.theme.DarkBackground
@@ -37,11 +39,38 @@ fun HomeScreen(
     onToggleFullscreen: () -> Unit,
     onEnterPiP: () -> Unit
 ) {
-    var channelList by remember { mutableStateOf(SampleChannels.defaultChannels) }
-    var selectedChannel by remember { mutableStateOf(channelList.first()) }
+    val context = LocalContext.current
+    var channelList by remember { mutableStateOf(ChannelRepository.loadChannels(context)) }
+    var selectedChannel by remember {
+        mutableStateOf(
+            channelList.firstOrNull() ?: Channel(
+                id = "empty",
+                name = "Tidak Ada Saluran",
+                category = "Semua",
+                streamUrl = ""
+            )
+        )
+    }
     var selectedCategory by remember { mutableStateOf("Semua") }
     var searchQuery by remember { mutableStateOf("") }
     var showAddDialog by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
+    var showResetConfirmDialog by remember { mutableStateOf(false) }
+
+    // State untuk Aksi Tekan Lama (Edit & Delete)
+    var channelToManage by remember { mutableStateOf<Channel?>(null) }
+    var showActionDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+
+    // Pastikan selectedChannel tetap sinkron jika diperbarui
+    LaunchedEffect(channelList) {
+        if (channelList.isNotEmpty()) {
+            if (channelList.none { it.id == selectedChannel.id }) {
+                selectedChannel = channelList.first()
+            }
+        }
+    }
 
     // Daftar kategori dinamis dari channel
     val categories = remember(channelList) {
@@ -101,6 +130,31 @@ fun HomeScreen(
                                 contentDescription = "Tambah Channel",
                                 tint = Color.White
                             )
+                        }
+                        // Menu Opsi Tambahan (Reset)
+                        Box {
+                            IconButton(onClick = { showMenu = !showMenu }) {
+                                Icon(
+                                    imageVector = Icons.Default.MoreVert,
+                                    contentDescription = "Menu Lainnya",
+                                    tint = Color.White
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = showMenu,
+                                onDismissRequest = { showMenu = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Reset ke Saluran Bawaan") },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.Refresh, contentDescription = null)
+                                    },
+                                    onClick = {
+                                        showMenu = false
+                                        showResetConfirmDialog = true
+                                    }
+                                )
+                            }
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBackground)
@@ -215,17 +269,109 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(filteredChannels, key = { it.id }) { channel ->
-                        val isPlaying = (channel.id == selectedChannel.id)
-                        ChannelCard(
-                            channel = channel,
-                            isPlaying = isPlaying,
-                            onClick = { selectedChannel = channel }
-                        )
+                    if (filteredChannels.isEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 40.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(
+                                        imageVector = Icons.Default.TvOff,
+                                        contentDescription = null,
+                                        tint = Color.Gray,
+                                        modifier = Modifier.size(48.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = "Tidak ada saluran ditemukan",
+                                        color = Color.Gray,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        items(filteredChannels, key = { it.id }) { channel ->
+                            val isPlaying = (channel.id == selectedChannel.id)
+                            ChannelCard(
+                                channel = channel,
+                                isPlaying = isPlaying,
+                                onClick = { selectedChannel = channel },
+                                onLongClick = {
+                                    channelToManage = channel
+                                    showActionDialog = true
+                                }
+                            )
+                        }
                     }
                 }
             }
         }
+    }
+
+    // Dialog Pilihan Aksi (Edit / Hapus) saat Tekan Lama
+    if (showActionDialog && channelToManage != null) {
+        val target = channelToManage!!
+        ChannelActionDialog(
+            channel = target,
+            onDismiss = {
+                showActionDialog = false
+            },
+            onEdit = {
+                showActionDialog = false
+                showEditDialog = true
+            },
+            onDelete = {
+                showActionDialog = false
+                showDeleteConfirmDialog = true
+            }
+        )
+    }
+
+    // Dialog Edit Saluran
+    if (showEditDialog && channelToManage != null) {
+        val target = channelToManage!!
+        EditChannelDialog(
+            channel = target,
+            onDismiss = { showEditDialog = false },
+            onSave = { updatedChannel ->
+                val updatedList = channelList.map {
+                    if (it.id == updatedChannel.id) updatedChannel else it
+                }
+                channelList = updatedList
+                if (selectedChannel.id == updatedChannel.id) {
+                    selectedChannel = updatedChannel
+                }
+                ChannelRepository.saveChannels(context, updatedList)
+                showEditDialog = false
+            }
+        )
+    }
+
+    // Dialog Konfirmasi Hapus Saluran
+    if (showDeleteConfirmDialog && channelToManage != null) {
+        val target = channelToManage!!
+        DeleteConfirmDialog(
+            channel = target,
+            onDismiss = { showDeleteConfirmDialog = false },
+            onConfirm = {
+                val updatedList = channelList.filter { it.id != target.id }
+                channelList = updatedList
+                if (selectedChannel.id == target.id) {
+                    selectedChannel = updatedList.firstOrNull() ?: Channel(
+                        id = "empty",
+                        name = "Tidak Ada Saluran",
+                        category = "Semua",
+                        streamUrl = ""
+                    )
+                }
+                ChannelRepository.saveChannels(context, updatedList)
+                showDeleteConfirmDialog = false
+            }
+        )
     }
 
     // Dialog Tambah Saluran / URL Baru
@@ -233,24 +379,59 @@ fun HomeScreen(
         AddChannelDialog(
             onDismiss = { showAddDialog = false },
             onAdd = { newChannel ->
-                channelList = listOf(newChannel) + channelList
+                val updatedList = listOf(newChannel) + channelList
+                channelList = updatedList
                 selectedChannel = newChannel
+                ChannelRepository.saveChannels(context, updatedList)
                 showAddDialog = false
+            }
+        )
+    }
+
+    // Dialog Konfirmasi Reset ke Saluran Bawaan
+    if (showResetConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetConfirmDialog = false },
+            title = { Text("Reset Saluran") },
+            text = { Text("Apakah Anda yakin ingin mengembalikan seluruh daftar saluran ke pengaturan awal?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val defaults = ChannelRepository.resetToDefaults(context)
+                        channelList = defaults
+                        selectedChannel = defaults.first()
+                        showResetConfirmDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = LiveRed)
+                ) {
+                    Text("Reset")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetConfirmDialog = false }) {
+                    Text("Batal")
+                }
             }
         )
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChannelCard(
     channel: Channel,
     isPlaying: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
+            .clip(RoundedCornerShape(12.dp))
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
             .then(
                 if (isPlaying) Modifier.border(2.dp, LiveRed, RoundedCornerShape(12.dp))
                 else Modifier
@@ -339,6 +520,164 @@ fun ChannelCard(
 }
 
 @Composable
+fun ChannelActionDialog(
+    channel: Channel,
+    onDismiss: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = channel.name,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(
+                    text = "Pilih tindakan untuk saluran ini:",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.LightGray
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                // Tombol Edit
+                OutlinedButton(
+                    onClick = onEdit,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Edit Saluran")
+                }
+                // Tombol Hapus
+                Button(
+                    onClick = onDelete,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = LiveRed)
+                ) {
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Hapus")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Hapus Saluran")
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Batal")
+            }
+        }
+    )
+}
+
+@Composable
+fun EditChannelDialog(
+    channel: Channel,
+    onDismiss: () -> Unit,
+    onSave: (Channel) -> Unit
+) {
+    var name by remember { mutableStateOf(channel.name) }
+    var streamUrl by remember { mutableStateOf(channel.streamUrl) }
+    var category by remember { mutableStateOf(channel.category) }
+    var logoUrl by remember { mutableStateOf(channel.logoUrl) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit Saluran") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Nama Saluran") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = streamUrl,
+                    onValueChange = { streamUrl = it },
+                    label = { Text("URL Streaming (.m3u8)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = category,
+                    onValueChange = { category = it },
+                    label = { Text("Kategori") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = logoUrl,
+                    onValueChange = { logoUrl = it },
+                    label = { Text("URL Logo (Opsional)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (name.isNotBlank() && streamUrl.isNotBlank()) {
+                        onSave(
+                            channel.copy(
+                                name = name.trim(),
+                                streamUrl = streamUrl.trim(),
+                                category = category.trim().ifEmpty { "Kustom" },
+                                logoUrl = logoUrl.trim()
+                            )
+                        )
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = LiveRed)
+            ) {
+                Text("Simpan Perubahan")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Batal")
+            }
+        }
+    )
+}
+
+@Composable
+fun DeleteConfirmDialog(
+    channel: Channel,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Konfirmasi Hapus") },
+        text = {
+            Text("Apakah Anda yakin ingin menghapus saluran \"${channel.name}\"?")
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(containerColor = LiveRed)
+            ) {
+                Text("Hapus")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Batal")
+            }
+        }
+    )
+}
+
+@Composable
 fun AddChannelDialog(
     onDismiss: () -> Unit,
     onAdd: (Channel) -> Unit
@@ -346,6 +685,7 @@ fun AddChannelDialog(
     var name by remember { mutableStateOf("") }
     var streamUrl by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("Kustom") }
+    var logoUrl by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -373,6 +713,13 @@ fun AddChannelDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
+                OutlinedTextField(
+                    value = logoUrl,
+                    onValueChange = { logoUrl = it },
+                    label = { Text("URL Logo (Opsional)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         },
         confirmButton = {
@@ -384,7 +731,7 @@ fun AddChannelDialog(
                                 id = "custom_${System.currentTimeMillis()}",
                                 name = name.trim(),
                                 category = category.trim().ifEmpty { "Kustom" },
-                                logoUrl = "",
+                                logoUrl = logoUrl.trim(),
                                 streamUrl = streamUrl.trim(),
                                 description = "Saluran Kustom"
                             )

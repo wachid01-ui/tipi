@@ -24,7 +24,13 @@ Aplikasi Android untuk streaming siaran televisi lokal Indonesia secara langsung
    * Kolom pencarian saluran instan (*real-time search*).
    * Pemuat logo saluran menggunakan pustaka **Coil**.
 
-5. **Tambah Saluran Kustom / URL Pribadi:**
+5. **Kelola Saluran (Tekan Lama / Long-Press):**
+   * **Edit Saluran:** Mengubah nama, kategori, URL streaming `.m3u8`, dan URL logo.
+   * **Hapus Saluran:** Menghapus saluran yang tidak diinginkan dengan konfirmasi.
+   * **Penyimpanan Lokal Persisten:** Seluruh perubahan saluran tersimpan otomatis di perangkat.
+   * **Reset Saluran:** Kembalikan daftar saluran ke pengaturan awal bawaan kapan saja via menu opsi.
+
+6. **Tambah Saluran Kustom / URL Pribadi:**
    * Dilengkapi dialog untuk menambahkan saluran kustom atau URL `.m3u8` langsung dari dalam aplikasi.
 
 ---
