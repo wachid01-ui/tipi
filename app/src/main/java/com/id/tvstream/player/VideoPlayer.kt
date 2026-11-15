@@ -1,7 +1,10 @@
 package com.id.tvstream.player
 
+import android.content.Context
+import android.content.ContextWrapper
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.activity.ComponentActivity
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -19,8 +22,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -28,6 +34,13 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.id.tvstream.ui.theme.LiveRed
+
+// Helper untuk menemukan Activity dari Context
+internal fun Context.findActivity(): ComponentActivity? = when (this) {
+    is ComponentActivity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -38,6 +51,7 @@ fun VideoPlayer(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     var isBuffering by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var retryTrigger by remember { mutableIntStateOf(0) }
@@ -68,6 +82,37 @@ fun VideoPlayer(
         onDispose {
             exoPlayer.removeListener(listener)
             exoPlayer.release()
+        }
+    }
+
+    // Kelola Lifecycle: Hentikan siaran TV saat user ke home atau membuka aplikasi lain
+    DisposableEffect(lifecycleOwner, exoPlayer) {
+        val observer = LifecycleEventObserver { _, event ->
+            val activity = context.findActivity()
+            val isInPip = activity?.isInPictureInPictureMode == true
+
+            when (event) {
+                Lifecycle.Event.ON_PAUSE, Lifecycle.Event.ON_STOP -> {
+                    // Jika tidak dalam mode PiP, jeda dan hentikan pemutaran siaran
+                    if (!isInPip) {
+                        exoPlayer.pause()
+                    }
+                }
+                Lifecycle.Event.ON_START, Lifecycle.Event.ON_RESUME -> {
+                    // Ketika kembali ke aplikasi, lanjutkan siaran langsung
+                    if (exoPlayer.playbackState != Player.STATE_IDLE) {
+                        if (exoPlayer.isCurrentMediaItemLive) {
+                            exoPlayer.seekToDefaultPosition()
+                        }
+                        exoPlayer.play()
+                    }
+                }
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 

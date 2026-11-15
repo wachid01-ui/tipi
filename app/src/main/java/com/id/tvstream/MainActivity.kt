@@ -90,12 +90,4 @@ class MainActivity : ComponentActivity() {
             enterPictureInPictureMode(params)
         }
     }
-
-    override fun onUserLeaveHint() {
-        super.onUserLeaveHint()
-        // Otomatis masuk mode Picture-in-Picture jika user menekan tombol Home
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            enterPipMode()
-        }
-    }
 }

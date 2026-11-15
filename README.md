@@ -15,8 +15,9 @@ Aplikasi Android untuk streaming siaran televisi lokal Indonesia secara langsung
    * **Mode Portrait:** Pemutar video 16:9 di bagian atas layar dan daftar saluran interaktif di bagian bawah.
    * **Mode Landscape (Fullscreen):** Layar penuh dengan tombol sembunyikan bar navigasi (*immersive mode*).
 
-3. **Picture-in-Picture (PiP):**
-   * Mendukung PiP Android bawaan: video tetap berputar di jendela kecil saat membuka aplikasi lain atau menekan tombol Home.
+3. **Picture-in-Picture (PiP) & Smart Lifecycle:**
+   * Mendukung PiP Android bawaan melalui tombol PiP manual.
+   * Siaran TV otomatis langsung dihentikan (*pause*) saat user kembali ke Home atau membuka aplikasi lain agar hemat baterai dan kuota.
 
 4. **Navigasi & Filter Saluran:**
    * Filter saluran berdasarkan Kategori (*Semua, Nasional, Daerah, Olahraga, Internasional*).
