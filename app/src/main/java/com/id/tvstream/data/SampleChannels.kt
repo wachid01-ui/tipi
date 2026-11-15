@@ -4,7 +4,7 @@ import com.id.tvstream.model.Channel
 
 object SampleChannels {
     val defaultChannels = listOf(
-        // === TV SWASTA NASIONAL ===
+        // === TV SWASTA & LOKAL INDONESIA ===
         Channel(
             id = "rcti_hd",
             name = "RCTI",
@@ -77,8 +77,6 @@ object SampleChannels {
             streamUrl = "https://pull.daaiplus.com/live-DAAIPLUS/live-DAAIPLUS_HD.m3u8",
             description = "Televisi cinta kasih & kemanusiaan"
         ),
-
-        // === TV PUBLIK & DAERAH ===
         Channel(
             id = "tvri_nasional",
             name = "TVRI Nasional",
@@ -150,6 +148,48 @@ object SampleChannels {
             logoUrl = "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/TVRI_logo_2019.svg/512px-TVRI_logo_2019.svg.png",
             streamUrl = "https://ott-balancer.tvri.go.id/live/eds/Bali/hls/Bali.m3u8",
             description = "Siaran lokal Pulau Dewata Bali"
+        ),
+
+        // === KATEGORI: UFC & COMBAT SPORTS ===
+        Channel(
+            id = "dazn_combat",
+            name = "DAZN Combat (UFC / MMA)",
+            category = "UFC",
+            logoUrl = "https://i.postimg.cc/VsW3Jsrz/logo-DAZN-Combat.png",
+            streamUrl = "https://jmp2.uk/plu-64d626ac9b414d000820e2fc.m3u8",
+            description = "Siaran langsung pertarungan MMA, UFC Highlights & Tinju"
+        ),
+        Channel(
+            id = "swerve_combat",
+            name = "Swerve Combat",
+            category = "UFC",
+            logoUrl = "https://i.imgur.com/eFZh7aG.png",
+            streamUrl = "https://linear-253.frequency.stream/mt/roku/253/hls/master/playlist.m3u8",
+            description = "Saluran pertarungan laga MMA, Kickboxing & Combat Sports"
+        ),
+        Channel(
+            id = "mma_tv",
+            name = "MMA-TV",
+            category = "UFC",
+            logoUrl = "https://i.imgur.com/QhdxNsB.png",
+            streamUrl = "https://streams2.sofast.tv/vglive-sk-462904/playlist.m3u8",
+            description = "Pertarungan Mixed Martial Arts 24/7"
+        ),
+        Channel(
+            id = "persiana_fight",
+            name = "Persiana Fight",
+            category = "UFC",
+            logoUrl = "https://i.imgur.com/mRsnztA.png",
+            streamUrl = "https://fighthls.persiana.live/hls/stream.m3u8",
+            description = "Siaran laga bela diri, MMA, dan Muay Thai dunia"
+        ),
+        Channel(
+            id = "tvs_boxing",
+            name = "TVS Boxing & Combat",
+            category = "UFC",
+            logoUrl = "https://i.imgur.com/30ZoF75.png",
+            streamUrl = "https://rpn.bozztv.com/gusa/gusa-tvsboxing/index.m3u8",
+            description = "Kejuaraan tinju internasional dan pertarungan pro"
         )
     )
 
