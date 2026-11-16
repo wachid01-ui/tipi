@@ -65,4 +65,7 @@ dependencies {
     // Serialization & Coroutines
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
+
+    // Unity Ads SDK
+    implementation(libs.unity.ads)
 }

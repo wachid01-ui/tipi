@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.id.tvstream.ads.UnityBannerAd
 import com.id.tvstream.data.ChannelRepository
 import com.id.tvstream.model.Channel
 import com.id.tvstream.player.VideoPlayer
@@ -159,6 +160,9 @@ fun HomeScreen(
                     },
                     colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkBackground)
                 )
+            },
+            bottomBar = {
+                UnityBannerAd()
             },
             containerColor = DarkBackground
         ) { innerPadding ->

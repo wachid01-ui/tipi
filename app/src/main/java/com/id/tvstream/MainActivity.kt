@@ -13,6 +13,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
+import com.id.tvstream.ads.UnityAdsManager
 import com.id.tvstream.ui.HomeScreen
 import com.id.tvstream.ui.theme.TVStreamTheme
 
@@ -22,6 +23,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Inisialisasi Unity Ads SDK
+        UnityAdsManager.initialize(this)
 
         setContent {
             TVStreamTheme {

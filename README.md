@@ -33,6 +33,11 @@ Aplikasi Android untuk streaming siaran televisi lokal Indonesia secara langsung
 6. **Tambah Saluran Kustom / URL Pribadi:**
    * Dilengkapi dialog untuk menambahkan saluran kustom atau URL `.m3u8` langsung dari dalam aplikasi.
 
+7. **Monetisasi Unity Banner Ads:**
+   * Terintegrasi dengan **Unity Ads Android SDK**.
+   * Banner iklan diletakkan di bagian bawah layar (*bottomBar*) dalam mode portrait, otomatis disembunyikan saat fullscreen dan PiP mode.
+   * Konfigurasi terpusat dan aman di `UnityAdsConfig.kt`.
+
 ---
 
 ## 🛠️ Tech Stack
@@ -64,3 +69,19 @@ Aplikasi Android untuk streaming siaran televisi lokal Indonesia secara langsung
 
 Daftar saluran bawaan dapat diubah di berkas:
 `app/src/main/java/com/id/tvstream/data/SampleChannels.kt`
+
+---
+
+## 💰 Pengaturan Unity Ads (Game ID & Placement)
+
+Konfigurasi iklan dapat disesuaikan di berkas:
+`app/src/main/java/com/id/tvstream/ads/UnityAdsManager.kt`
+
+```kotlin
+object UnityAdsConfig {
+    const val GAME_ID = "5732156"          // Masukkan Game ID dari Unity Dashboard
+    const val BANNER_PLACEMENT_ID = "Banner_Android" // Placement ID banner Anda
+    const val TEST_MODE = true             // Ubah ke false untuk production
+}
+```
+

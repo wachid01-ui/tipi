@@ -9,6 +9,7 @@ media3 = "1.5.0"
 coil = "2.7.0"
 coroutines = "1.9.0"
 serialization = "1.7.3"
+unityAds = "4.12.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -35,6 +36,9 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 # Coroutines & Serialization
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
+
+# Unity Ads SDK
+unity-ads = { group = "com.unity3d.ads", name = "unity-ads", version.ref = "unityAds" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
