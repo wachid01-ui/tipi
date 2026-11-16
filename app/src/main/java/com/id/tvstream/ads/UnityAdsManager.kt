@@ -41,6 +41,9 @@ object UnityAdsManager {
     private val _isInitialized = mutableStateOf(false)
     val isInitialized: State<Boolean> = _isInitialized
 
+    private val _errorMessage = mutableStateOf<String?>(null)
+    val errorMessage: State<String?> = _errorMessage
+
     /**
      * Menginisialisasi Unity Ads SDK.
      * Biasanya dipanggil sekali saat aplikasi mulai di `MainActivity.onCreate`.
@@ -52,11 +55,14 @@ object UnityAdsManager {
     ) {
         if (UnityAds.isInitialized) {
             _isInitialized.value = true
+            _errorMessage.value = null
             return
         }
 
         if (gameId.isBlank()) {
-            Log.w(TAG, "Unity Game ID belum diisi. Inisialisasi iklan dilewati.")
+            val err = "Unity Game ID masih kosong. Silakan atur Game ID di UnityAdsConfig.kt"
+            Log.w(TAG, err)
+            _errorMessage.value = err
             return
         }
 
@@ -69,13 +75,16 @@ object UnityAdsManager {
                 override fun onInitializationComplete() {
                     Log.d(TAG, "Unity Ads berhasil diinisialisasi.")
                     _isInitialized.value = true
+                    _errorMessage.value = null
                 }
 
                 override fun onInitializationFailed(
                     error: UnityAds.UnityAdsInitializationError?,
                     message: String?
                 ) {
-                    Log.e(TAG, "Inisialisasi Unity Ads gagal: $error - $message")
+                    val errMsg = "$error: $message"
+                    Log.e(TAG, "Inisialisasi Unity Ads gagal: $errMsg")
+                    _errorMessage.value = errMsg
                     _isInitialized.value = false
                 }
             }
