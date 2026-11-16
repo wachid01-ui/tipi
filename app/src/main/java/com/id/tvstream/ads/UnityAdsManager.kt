@@ -50,7 +50,7 @@ object UnityAdsManager {
         gameId: String = UnityAdsConfig.GAME_ID,
         testMode: Boolean = UnityAdsConfig.TEST_MODE
     ) {
-        if (UnityAds.isInitialized()) {
+        if (UnityAds.isInitialized) {
             _isInitialized.value = true
             return
         }
