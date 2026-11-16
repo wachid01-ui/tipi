@@ -1,7 +1,10 @@
 package com.id.tvstream
 
 import android.app.PictureInPictureParams
+import android.app.UiModeManager
+import android.content.Context
 import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
@@ -23,6 +26,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Jika dijalankan di Android TV, kunci ke orientasi landscape
+        if (isTvMode()) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        }
 
         // Inisialisasi Unity Ads SDK
         UnityAdsManager.initialize(this)
@@ -53,12 +61,20 @@ class MainActivity : ComponentActivity() {
         applySystemBarVisibility(isFullscreenState)
     }
 
+    private fun isTvMode(): Boolean {
+        val uiModeManager = getSystemService(Context.UI_MODE_SERVICE) as? UiModeManager
+        return uiModeManager?.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION ||
+                !packageManager.hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN)
+    }
+
     private fun toggleFullscreen(enable: Boolean) {
         isFullscreenState = enable
-        requestedOrientation = if (enable) {
-            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-        } else {
-            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        if (!isTvMode()) {
+            requestedOrientation = if (enable) {
+                ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            } else {
+                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
         }
         applySystemBarVisibility(enable)
     }

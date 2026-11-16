@@ -72,6 +72,22 @@ Aplikasi Android untuk streaming siaran televisi Indonesia & seluruh dunia secar
 
 ---
 
+## 📺 Dukungan Android TV, Google TV & TV Box
+
+Aplikasi **Tiviku** telah dioptimalkan secara universal untuk **HP, Tablet, dan Android TV / Google TV / Android TV Box**:
+- **Non-Touchscreen Ready:** Tidak mewajibkan layar sentuh (`android.hardware.touchscreen = false`).
+- **Tampil di Beranda TV:** Ikon otomatis muncul di halaman utama launcher TV via `LEANBACK_LAUNCHER`.
+- **Navigasi Remote Control (D-Pad):** Sorotan fokus putih menyala saat kursor remote TV diarahkan ke saluran, tekan tombol **OK** untuk memutar.
+- **Kunci Lanskap Otomatis:** Otomatis mengunci rasio layar penuh lanskap saat mendeteksi perangkat TV.
+
+### Cara Instal di Android TV:
+1. Unduh berkas `app-debug.apk` dari tab **Actions** di repositori GitHub ini.
+2. Salin file `.apk` ke Flashdisk USB dan tancapkan ke TV / TV Box.
+3. Gunakan aplikasi pengelola berkas di TV (seperti *X-plore* atau *File Commander*) untuk membuka dan menginstal `.apk`.
+4. Buka aplikasi **Tiviku** langsung dari layar utama Android TV Anda!
+
+---
+
 ## 📺 Sumber Data Saluran (Seluruh Dunia)
 
 Daftar saluran global (13.000+ saluran dari 190 negara) bersumber dari repository [iptv-org/iptv](https://github.com/iptv-org/iptv) dan disimpan di berkas:

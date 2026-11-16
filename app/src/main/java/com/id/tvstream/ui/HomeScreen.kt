@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -489,21 +490,27 @@ fun ChannelCard(
     onClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
+    var isFocused by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
+            .onFocusChanged { isFocused = it.isFocused }
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick
             )
             .then(
-                if (isPlaying) Modifier.border(2.dp, LiveRed, RoundedCornerShape(12.dp))
+                if (isFocused) Modifier.border(3.dp, Color.White, RoundedCornerShape(12.dp))
+                else if (isPlaying) Modifier.border(2.dp, LiveRed, RoundedCornerShape(12.dp))
                 else Modifier
             ),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (isPlaying) DarkSurfaceVariant else DarkSurface
+            containerColor = if (isFocused) DarkSurfaceVariant.copy(alpha = 0.95f)
+            else if (isPlaying) DarkSurfaceVariant
+            else DarkSurface
         )
     ) {
         Row(
