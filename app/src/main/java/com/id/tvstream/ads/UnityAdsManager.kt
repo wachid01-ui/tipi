@@ -16,13 +16,13 @@ object UnityAdsConfig {
      * Unity Game ID Anda (didapatkan dari Unity Dashboard -> Project Settings -> Monetization).
      * Contoh format: "5732156" (Android).
      */
-    const val GAME_ID = "5732156"
+    const val GAME_ID = "800438058"
 
     /**
      * Placement ID / Ad Unit ID untuk Banner.
      * Biasanya bernilai "Banner_Android" atau "banner" di Unity Dashboard.
      */
-    const val BANNER_PLACEMENT_ID = "Banner_Android"
+    const val BANNER_PLACEMENT_ID = "BP_Banner_Android"
 
     /**
      * Mode Pengujian (Test Mode).
