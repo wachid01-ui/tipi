@@ -1,6 +1,6 @@
-# Indonesia TV Streaming (Android Mobile App)
+# Tiviku - TV Streaming App (Android Mobile App)
 
-Aplikasi Android untuk streaming siaran televisi lokal Indonesia secara langsung (*Live Streaming*) berbasis **Kotlin**, **Jetpack Compose (Material 3)**, dan **AndroidX Media3 (ExoPlayer)**.
+Aplikasi Android untuk streaming siaran televisi Indonesia & seluruh dunia secara langsung (*Live Streaming*) berbasis **Kotlin**, **Jetpack Compose (Material 3)**, dan **AndroidX Media3 (ExoPlayer)**.
 
 ---
 
