@@ -48,6 +48,9 @@ fun VideoPlayer(
     streamUrl: String,
     isFullscreen: Boolean,
     onToggleFullscreen: () -> Unit,
+    onPlaybackError: (() -> Unit)? = null,
+    onPlaybackSuccess: (() -> Unit)? = null,
+    onNextChannel: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -70,12 +73,14 @@ fun VideoPlayer(
                 isBuffering = (playbackState == Player.STATE_BUFFERING)
                 if (playbackState == Player.STATE_READY) {
                     errorMessage = null
+                    onPlaybackSuccess?.invoke()
                 }
             }
 
             override fun onPlayerError(error: PlaybackException) {
                 isBuffering = false
-                errorMessage = "Gagal memuat siaran (${error.errorCodeName})."
+                errorMessage = "Siaran tidak aktif atau sedang offline."
+                onPlaybackError?.invoke()
             }
         }
         exoPlayer.addListener(listener)
@@ -217,14 +222,24 @@ fun VideoPlayer(
                     color = Color.White,
                     style = MaterialTheme.typography.bodyMedium
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = { retryTrigger++ },
-                    colors = ButtonDefaults.buttonColors(containerColor = LiveRed)
-                ) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Retry")
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Coba Lagi")
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = { retryTrigger++ },
+                        colors = ButtonDefaults.buttonColors(containerColor = LiveRed)
+                    ) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Retry")
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Coba Lagi")
+                    }
+                    if (onNextChannel != null) {
+                        OutlinedButton(
+                            onClick = onNextChannel,
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White)
+                        ) {
+                            Text("Saluran Lain ▶")
+                        }
+                    }
                 }
             }
         }

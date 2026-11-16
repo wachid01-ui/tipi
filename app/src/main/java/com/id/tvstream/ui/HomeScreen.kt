@@ -59,6 +59,8 @@ fun HomeScreen(
     var showAddDialog by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
     var showResetConfirmDialog by remember { mutableStateOf(false) }
+    var offlineChannelIds by remember { mutableStateOf(setOf<String>()) }
+    var hideOfflineChannels by remember { mutableStateOf(false) }
 
     // State untuk Aksi Tekan Lama (Edit & Delete)
     var channelToManage by remember { mutableStateOf<Channel?>(null) }
@@ -80,20 +82,36 @@ fun HomeScreen(
         listOf("Semua") + channelList.map { it.category }.distinct()
     }
 
-    // Filter daftar channel berdasarkan kategori dan pencarian
-    val filteredChannels = remember(channelList, selectedCategory, searchQuery) {
+    // Filter daftar channel berdasarkan kategori, pencarian, dan status aktif
+    val filteredChannels = remember(channelList, selectedCategory, searchQuery, hideOfflineChannels, offlineChannelIds) {
         val q = searchQuery.trim()
+        val list = if (hideOfflineChannels) {
+            channelList.filter { it.id !in offlineChannelIds }
+        } else {
+            channelList
+        }
+
         if (q.isNotEmpty()) {
-            channelList.filter { channel ->
+            list.filter { channel ->
                 channel.name.contains(q, ignoreCase = true) ||
                 channel.category.contains(q, ignoreCase = true)
             }
         } else {
             if (selectedCategory == "Semua") {
-                channelList
+                list
             } else {
-                channelList.filter { it.category == selectedCategory }
+                list.filter { it.category == selectedCategory }
             }
+        }
+    }
+
+    // Aksi lompat ke saluran berikutnya
+    val selectNextChannel = {
+        val currentIndex = filteredChannels.indexOfFirst { it.id == selectedChannel.id }
+        if (currentIndex != -1 && currentIndex < filteredChannels.size - 1) {
+            selectedChannel = filteredChannels[currentIndex + 1]
+        } else if (filteredChannels.isNotEmpty()) {
+            selectedChannel = filteredChannels.first()
         }
     }
 
@@ -103,6 +121,13 @@ fun HomeScreen(
             streamUrl = selectedChannel.streamUrl,
             isFullscreen = true,
             onToggleFullscreen = onToggleFullscreen,
+            onPlaybackError = {
+                offlineChannelIds = offlineChannelIds + selectedChannel.id
+            },
+            onPlaybackSuccess = {
+                offlineChannelIds = offlineChannelIds - selectedChannel.id
+            },
+            onNextChannel = selectNextChannel,
             modifier = Modifier.fillMaxSize()
         )
     } else {
@@ -156,6 +181,21 @@ fun HomeScreen(
                                 onDismissRequest = { showMenu = false }
                             ) {
                                 DropdownMenuItem(
+                                    text = {
+                                        Text(if (hideOfflineChannels) "Tampilkan Semua Saluran" else "Sembunyikan Saluran Mati")
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = if (hideOfflineChannels) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                            contentDescription = null
+                                        )
+                                    },
+                                    onClick = {
+                                        showMenu = false
+                                        hideOfflineChannels = !hideOfflineChannels
+                                    }
+                                )
+                                DropdownMenuItem(
                                     text = { Text("Reset ke Saluran Bawaan") },
                                     leadingIcon = {
                                         Icon(Icons.Default.Refresh, contentDescription = null)
@@ -185,7 +225,14 @@ fun HomeScreen(
                 VideoPlayer(
                     streamUrl = selectedChannel.streamUrl,
                     isFullscreen = false,
-                    onToggleFullscreen = onToggleFullscreen
+                    onToggleFullscreen = onToggleFullscreen,
+                    onPlaybackError = {
+                        offlineChannelIds = offlineChannelIds + selectedChannel.id
+                    },
+                    onPlaybackSuccess = {
+                        offlineChannelIds = offlineChannelIds - selectedChannel.id
+                    },
+                    onNextChannel = selectNextChannel
                 )
 
                 // Info Saluran yang Sedang Ditonton
@@ -310,9 +357,11 @@ fun HomeScreen(
                     } else {
                         items(filteredChannels, key = { it.id }) { channel ->
                             val isPlaying = (channel.id == selectedChannel.id)
+                            val isOffline = channel.id in offlineChannelIds
                             ChannelCard(
                                 channel = channel,
                                 isPlaying = isPlaying,
+                                isOffline = isOffline,
                                 onClick = { selectedChannel = channel },
                                 onLongClick = {
                                     channelToManage = channel
@@ -436,6 +485,7 @@ fun HomeScreen(
 fun ChannelCard(
     channel: Channel,
     isPlaying: Boolean,
+    isOffline: Boolean = false,
     onClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
@@ -507,7 +557,7 @@ fun ChannelCard(
                 )
             }
 
-            // Indikator Aktif
+            // Indikator Aktif / Status
             if (isPlaying) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -525,6 +575,20 @@ fun ChannelCard(
                     Text(
                         text = "Diputar",
                         color = LiveRed,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            } else if (isOffline) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .background(Color.Red.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "Mati",
+                        color = Color(0xFFFF6E6E),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold
                     )

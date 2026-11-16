@@ -39,6 +39,12 @@ Aplikasi Android untuk streaming siaran televisi lokal Indonesia secara langsung
    * Banner iklan diletakkan di bagian bawah layar (*bottomBar*) dalam mode portrait, otomatis disembunyikan saat fullscreen dan PiP mode.
    * Konfigurasi terpusat dan aman di `UnityAdsConfig.kt`.
 
+8. **Penyaringan Saluran Hidup & Smart Detection:**
+   * Seluruh 9.200+ saluran bawaan telah diverifikasi aktif (200 OK) dan tautan mati telah dibersihkan.
+   * Dilengkapi deteksi otomatis: jika suatu siaran offline/gagal, aplikasi menandainya dengan label 'Mati'.
+   * Terdapat opsi menu 'Sembunyikan Saluran Mati' untuk menyaring hanya saluran yang hidup.
+   * Tombol 'Saluran Lain ▶' otomatis muncul saat siaran bermasalah untuk beralih ke saluran berikutnya.
+
 ---
 
 ## 🛠️ Tech Stack
