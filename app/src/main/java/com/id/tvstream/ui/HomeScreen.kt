@@ -52,7 +52,9 @@ fun HomeScreen(
             )
         )
     }
-    var selectedCategory by remember { mutableStateOf("Semua") }
+    var selectedCategory by remember {
+        mutableStateOf(channelList.firstOrNull()?.category ?: "Semua")
+    }
     var searchQuery by remember { mutableStateOf("") }
     var showAddDialog by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
@@ -80,10 +82,18 @@ fun HomeScreen(
 
     // Filter daftar channel berdasarkan kategori dan pencarian
     val filteredChannels = remember(channelList, selectedCategory, searchQuery) {
-        channelList.filter { channel ->
-            val matchCategory = selectedCategory == "Semua" || channel.category == selectedCategory
-            val matchSearch = searchQuery.isBlank() || channel.name.contains(searchQuery, ignoreCase = true)
-            matchCategory && matchSearch
+        val q = searchQuery.trim()
+        if (q.isNotEmpty()) {
+            channelList.filter { channel ->
+                channel.name.contains(q, ignoreCase = true) ||
+                channel.category.contains(q, ignoreCase = true)
+            }
+        } else {
+            if (selectedCategory == "Semua") {
+                channelList
+            } else {
+                channelList.filter { it.category == selectedCategory }
+            }
         }
     }
 
@@ -217,7 +227,7 @@ fun HomeScreen(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text("Cari saluran TV...", color = Color.Gray) },
+                    placeholder = { Text("Cari saluran TV atau negara...", color = Color.Gray) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Cari", tint = Color.Gray) },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
@@ -404,6 +414,7 @@ fun HomeScreen(
                         val defaults = ChannelRepository.resetToDefaults(context)
                         channelList = defaults
                         selectedChannel = defaults.first()
+                        selectedCategory = defaults.first().category
                         showResetConfirmDialog = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = LiveRed)

@@ -19,9 +19,10 @@ Aplikasi Android untuk streaming siaran televisi lokal Indonesia secara langsung
    * Mendukung PiP Android bawaan melalui tombol PiP manual.
    * Siaran TV otomatis langsung dihentikan (*pause*) saat user kembali ke Home atau membuka aplikasi lain agar hemat baterai dan kuota.
 
-4. **Navigasi & Filter Saluran:**
-   * Filter saluran berdasarkan Kategori (*Semua, Nasional, Daerah, Olahraga, Internasional*).
-   * Kolom pencarian saluran instan (*real-time search*).
+4. **Navigasi & Filter Saluran Seluruh Dunia (190+ Negara):**
+   * Filter saluran berdasarkan Negara dengan bendera (190+ negara bersumber dari [iptv-org](https://github.com/iptv-org/iptv)).
+   * Saluran Indonesia dan negara populer ditempatkan di awal.
+   * Kolom pencarian saluran instan (*real-time search*) lintas saluran global.
    * Pemuat logo saluran menggunakan pustaka **Coil**.
 
 5. **Kelola Saluran (Tekan Lama / Long-Press):**
@@ -65,10 +66,10 @@ Aplikasi Android untuk streaming siaran televisi lokal Indonesia secara langsung
 
 ---
 
-## 📺 Mengubah atau Menambah Daftar Saluran
+## 📺 Sumber Data Saluran (Seluruh Dunia)
 
-Daftar saluran bawaan dapat diubah di berkas:
-`app/src/main/java/com/id/tvstream/data/SampleChannels.kt`
+Daftar saluran global (13.000+ saluran dari 190 negara) bersumber dari repository [iptv-org/iptv](https://github.com/iptv-org/iptv) dan disimpan di berkas:
+`app/src/main/assets/channels.json`
 
 ---
 
