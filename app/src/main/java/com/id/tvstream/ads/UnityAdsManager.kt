@@ -29,7 +29,7 @@ object UnityAdsConfig {
      * Set ke `true` saat proses development/testing agar iklan test muncul.
      * Ubah ke `false` sebelum merilis aplikasi ke Google Play Store untuk mendapatkan pendapatan riil.
      */
-    const val TEST_MODE = true
+    const val TEST_MODE = false
 }
 
 /**
